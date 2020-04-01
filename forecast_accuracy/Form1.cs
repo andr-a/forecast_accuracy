@@ -7,14 +7,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
+using Newtonsoft.Json;
 
 namespace forecast_accuracy
 {
     public partial class Form1 : Form
     {
+        public const string ApiKey = "***REMOVED***";
+        public string city = "tokyo";
+
         public Form1()
         {
             InitializeComponent();
+            var api = new Api();
+
+            var weather = api.GetWeatherByName(city);
+            Console.WriteLine(weather.Rain.RainMm);
+            var foreCast = api.GetForecastByName(city);
+            Console.WriteLine("Forecast: " + foreCast.List[34].Rain.RainMm);
         }
+
+
+
     }
 }
