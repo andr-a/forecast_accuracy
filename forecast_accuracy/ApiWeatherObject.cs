@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace forecast_accuracy
 {
-    public class WeatherObject
+    public class ApiWeatherObject
     {
         public Coord Coord { get; set; }
         public List<Weather> Weather { get; set; }
@@ -15,9 +15,11 @@ namespace forecast_accuracy
         public CurrentMain Main { get; set; }
         public int Visibilty { get; set; }
         public Wind Wind { get; set; }
-        public Rain Rain { get; set; } = new Rain(); // Kein Regen -> "default" Objekt mit wert 0
+        // Kein Regen -> "default" Objekt mit wert 0
+        public Rain Rain { get; set; } = new Rain();
         public Clouds Clouds { get; set; }
-        public int Dt { get; set; }
+        // Zeit der Datenberechnung als Unix Timestamp
+        public long Dt { get; set; }
         public CurrentSys Sys { get; set; }
         public int Timezone { get; set; }
         public int Id { get; set; }
