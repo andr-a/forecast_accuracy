@@ -14,5 +14,7 @@ namespace forecast_accuracy
         public int Cnt { get; set; }
         public List<ForecastObject> List { get; set; }
         public ForecastCity City { get; set; }
+        // Nich von der API
+        public DateTime DateOfRequest { get; } = DateTime.UtcNow;
     }
 }
