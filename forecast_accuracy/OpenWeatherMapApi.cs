@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace forecast_accuracy
 {
@@ -14,8 +15,10 @@ namespace forecast_accuracy
 
         public (DatabaseWeather weather, DatabaseCity city) GetCurrentByName(string city)
         {
-            var weatherObject = this.GetApiWeatherByName(city);
-            return (new DatabaseWeather(weatherObject), new DatabaseCity(weatherObject));
+            var apiWeatherObject = this.GetApiWeatherByName(city);
+            if (apiWeatherObject != null && apiWeatherObject.Cod == 200)
+                return (new DatabaseWeather(apiWeatherObject), new DatabaseCity(apiWeatherObject));
+            return (null, null);
         }
 
         public List<DatabaseWeather> GetForecastListByName(string city)
@@ -36,7 +39,7 @@ namespace forecast_accuracy
         {
             string url = "http://api.openweathermap.org/data/2.5/weather?units=metric&q=";
             url = url + city + "&APPID=" + ApiKey;
-            Console.WriteLine(url);
+            //Console.WriteLine(url);
             return url;
         }
 
@@ -44,25 +47,45 @@ namespace forecast_accuracy
         {
             string url = "http://api.openweathermap.org/data/2.5/forecast?units=metric&q=";
             url = url + city + "&APPID=" + ApiKey;
-            Console.WriteLine(url);
+            //Console.WriteLine(url);
             return url;
         }
 
         private ApiWeatherObject GetApiWeatherByName(string city)
         {
             var url = BuildWeatherUrl(city);
-            var json = new WebClient().DownloadString(url);
-            var result = JsonConvert.DeserializeObject<ApiWeatherObject>(json);
+            var client = new WebClient();
 
-            return result;
+            try
+            {
+                var json = client.DownloadString(url);
+                var result = JsonConvert.DeserializeObject<ApiWeatherObject>(json);
+                return result;
+            }
+            catch (WebException ex)
+            {
+                MessageBox.Show("GetApiWeatherByName:\n\n" + ex.Message);
+                Console.WriteLine("!");
+                return null;
+            }
         }
 
         private ForecastCollection GetApiForecastByName(string city)
         {
             var url = BuildForecastUrl(city);
-            var json = new WebClient().DownloadString(url);
-            var result = JsonConvert.DeserializeObject<ForecastCollection>(json);
-            return result;
+            var client = new WebClient();
+            try
+            {
+                var json = client.DownloadString(url);
+                var result = JsonConvert.DeserializeObject<ForecastCollection>(json);
+                return result;
+            }
+            catch (WebException ex)
+            {
+                MessageBox.Show("GetApiForecastByName:\n\n" + ex.Message);
+                return null;
+            }
+            
         }
 
     }

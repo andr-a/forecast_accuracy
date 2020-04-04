@@ -13,6 +13,15 @@ namespace forecast_accuracy
         public string CountryIso { get; set; }
         public int TimezoneShift { get; set; }
 
+        // Nicht in Verwendung.
+        public DatabaseCity(int id, string name, string countryIso, int timezoneShift)
+        {
+            this.Id = id;
+            this.Name = name;
+            this.CountryIso = countryIso;
+            this.TimezoneShift = timezoneShift;
+        }
+
         public DatabaseCity(ApiWeatherObject weatherObject)
         {
             this.Id = weatherObject.Id;
