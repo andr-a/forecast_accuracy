@@ -42,7 +42,7 @@ namespace forecast_accuracy
             this.Humidity = forecastObject.Main.Humidity;
 
             var dateOfRequest = DateTime.UtcNow.Date;
-            this.TMinus = (this.Time.Date - dateOfRequest).Days;
+            this.TMinus = (int)Math.Ceiling((this.Time - dateOfRequest).TotalDays);
         }
 
         // Nicht in Verwendung.
