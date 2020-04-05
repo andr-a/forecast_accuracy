@@ -103,6 +103,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper.cs" />
     <Compile Include="OpenWeatherMapApi.cs" />
     <Compile Include="Clouds.cs" />
     <Compile Include="Coord.cs" />
