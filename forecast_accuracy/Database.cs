@@ -22,21 +22,16 @@ namespace forecast_accuracy
             + $"PASSWORD={Password};"
             + $"DATABASE={DatabaseName}"
             );
-        private const string OnDuplicateKey = "ON DUPLICATE KEY UPDATE temperature = VALUES(temperature), "
-            + "wind_speed = VALUES(wind_speed), wind_degree = VALUES(wind_degree), pressure = VALUES(pressure), "
-            + "humidity = VALUES(humidity)";
-
-        public MySqlConnection Connection => connection;
 
         private void OpenDb()
         {
-            Connection.Open();
+            connection.Open();
         }
 
         private void CloseDb()
         {
-            if (Connection != null)
-                Connection.Close();
+            if (connection != null)
+                connection.Close();
         }
 
         public void WriteCity(DatabaseCity city)
@@ -49,26 +44,45 @@ namespace forecast_accuracy
             try
             {
                 OpenDb();
-                var command = Connection.CreateCommand();
+                var command = connection.CreateCommand();
                 // Bei Zeitumstellung ändert sich timezoneShift entsprechend.
-                command.CommandText = $"INSERT INTO city VALUES({id}, '{name}', '{countryIso}', {timezoneShift}) "
-                                    + $"ON DUPLICATE KEY UPDATE timezone_shift = {timezoneShift}";
+                command.CommandText = $"INSERT INTO city VALUES({id}, '{name}', '{countryIso}', {timezoneShift}, 0) "
+                                    + $"ON DUPLICATE KEY UPDATE timezone_shift = {timezoneShift}, suspended = 0";
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show("WriteCity: " + ex.Message);
             }
             finally
             {
                 CloseDb();
-                Console.WriteLine("City written.");
+            }
+        }
+
+        public void SuspendCity(string cityName)
+        {
+            try
+            {
+                OpenDb();
+                var command = connection.CreateCommand();
+                command.CommandText = $"UPDATE city SET suspended = 1 WHERE name = '{cityName}'";
+                command.ExecuteNonQuery();
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
+            }
+            finally
+            {
+                CloseDb();
             }
         }
 
         public void WriteActual(DatabaseWeather weather)
         {
-            var timeofCalculation = weather.Time;
+            var roundedTime = weather.TimeOfWeather;
+            var timeofCalculation = weather.TimeOfCalculation;
             var cityId = weather.CityId;
             var temperatur = weather.Temperature.ToString(CultureInfo.InvariantCulture);
             var windSpeed = weather.WindSpeed.ToString(CultureInfo.InvariantCulture);
@@ -79,13 +93,14 @@ namespace forecast_accuracy
             try
             {
                 OpenDb();
-                var command = Connection.CreateCommand();
+                var command = connection.CreateCommand();
                 // Daten werden nur alle paar Minuten neu berechnet.
-                command.CommandText = $"INSERT IGNORE INTO actual VALUES('{timeofCalculation:yyyy-MM-dd HH-mm-ss}', "
+                command.CommandText = $"INSERT IGNORE INTO actual VALUES('{roundedTime:yyyy-MM-dd HH:mm:ss}', "
+                                     + $"'{timeofCalculation:yyyy-MM-dd HH:mm:ss}', "
                                      + $"{cityId}, {temperatur}, {windSpeed}, {windDegree}, {pressure}, {humidity})";
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show("WriteActual: " + ex.Message);
             }
@@ -102,17 +117,17 @@ namespace forecast_accuracy
 
             foreach (var weather in forecastList)
             {
-                var forecastTime = weather.Time;
+                var forecastTime = weather.TimeOfWeather;
+                var roundedTimeOfRequest = weather.TimeOfCalculation;
                 var cityId = weather.CityId;
                 var temperature = weather.Temperature.ToString(CultureInfo.InvariantCulture);
                 var windSpeed = weather.WindSpeed.ToString(CultureInfo.InvariantCulture);
                 var windDegree = weather.WindDegree;
                 var pressure = weather.Pressure;
                 var humidity = weather.Humidity;
-                var tMinus = weather.TMinus;
 
-                values += $"('{forecastTime:yyyy-MM-dd HH:mm:ss}', {tMinus}, {cityId}, {temperature}, "
-                        + $"{windSpeed}, {windDegree}, {pressure}, {humidity})";
+                values += $"('{forecastTime:yyyy-MM-dd HH:mm:ss}', '{roundedTimeOfRequest:yyyy-MM-dd HH:mm:ss}', "
+                        + $"{cityId}, {temperature}, {windSpeed}, {windDegree}, {pressure}, {humidity})";
                 if (weather != last)
                 {
                     values += ", ";
@@ -122,11 +137,14 @@ namespace forecast_accuracy
             try
             {
                 OpenDb();
-                var command = Connection.CreateCommand();
-                command.CommandText = $"INSERT INTO forecast VALUES {values}" + OnDuplicateKey;
+                var command = connection.CreateCommand();
+                command.CommandText = $"INSERT INTO forecast VALUES {values}"
+                    + "ON DUPLICATE KEY UPDATE temperature = VALUES(temperature), "
+                    + "wind_speed = VALUES(wind_speed), wind_degree = VALUES(wind_degree), pressure = VALUES(pressure), "
+                    + "pressure = VALUES(pressure), humidity = VALUES(humidity)";
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show("WriteForecastList: " + ex.Message);
             }
@@ -143,13 +161,13 @@ namespace forecast_accuracy
             {
                 OpenDb();
                 var command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM city ORDER BY name";
+                command.CommandText = "SELECT * FROM city WHERE suspended = 0 ORDER BY name";
                 command.ExecuteNonQuery();
 
                 var dataAdapter = new MySqlDataAdapter(command);
                 dataAdapter.Fill(dataTable);
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
             }
@@ -172,7 +190,7 @@ namespace forecast_accuracy
                 var dataAdapter = new MySqlDataAdapter(command);
                 dataAdapter.Fill(dataTable);
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
             }
@@ -180,6 +198,43 @@ namespace forecast_accuracy
             {
                 CloseDb();
             }
+        }
+
+        public List<DatabaseWeather> GetForecastListById(int cityId)
+        {
+            var forecastList = new List<DatabaseWeather>();
+
+            try
+            {
+                OpenDb();
+                var command = connection.CreateCommand();
+                command.CommandText = $"SELECT * FROM forecast WHERE city_id = {cityId} ORDER BY forecast_time";
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var forecast = new DatabaseWeather(
+                        reader.GetDateTime(0),
+                        reader.GetDateTime(1),
+                        reader.GetInt32(2),
+                        !reader.IsDBNull(3) ? reader.GetDouble(3) : 0.0,
+                        !reader.IsDBNull(4) ? reader.GetDouble(4) : 0.0,
+                        !reader.IsDBNull(5) ? reader.GetInt32(5) : 0,
+                        !reader.IsDBNull(6) ? reader.GetInt32(6) : 0,
+                        !reader.IsDBNull(7) ? reader.GetInt32(7) : 0
+                        );
+                    forecastList.Add(forecast);
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
+            }
+            finally
+            {
+                CloseDb();
+            }
+            return forecastList;
         }
 
         // Nicht in Verwendung, deshalb private.
@@ -190,7 +245,7 @@ namespace forecast_accuracy
             try
             {
                 OpenDb();
-                var command = Connection.CreateCommand();
+                var command = connection.CreateCommand();
                 command.CommandText = "SELECT * FROM city";
                 var reader = command.ExecuteReader();
 
@@ -205,7 +260,7 @@ namespace forecast_accuracy
                     cityList.Add(city);
                 }
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show("GetCityList:\n\n" + ex.Message);
             }
@@ -216,35 +271,7 @@ namespace forecast_accuracy
             return cityList;
         }
 
-        // Nicht in Verwendung, deshalb private.
-        private void WriteForecast(DatabaseWeather weather)
-        {
-            var forecastTime = weather.Time;
-            var cityId = weather.CityId;
-            var temperature = weather.Temperature;
-            var windSpeed = weather.WindSpeed;
-            var windDegree = weather.WindDegree;
-            var pressure = weather.Pressure;
-            var humidity = weather.Humidity;
-            var tMinus = weather.TMinus;
-
-            try
-            {
-                OpenDb();
-                var command = Connection.CreateCommand();
-                command.CommandText = $"INSERT INTO forecast VALUES({forecastTime}, {cityId}, {temperature}, {windSpeed}, "
-                                    + $"{windDegree}, {pressure}, {humidity}, {tMinus})";
-                command.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("WriteForecast: " + ex.Message);
-            }
-            finally
-            {
-                CloseDb();
-            }
-        }
+       
 
         // Nicht in Verwendung, deshalb private.
         private void WriteForcastCollection(ForecastCollection forecastCollection)
@@ -277,12 +304,15 @@ namespace forecast_accuracy
             try
             {
                 OpenDb();
-                var command = Connection.CreateCommand();
-                command.CommandText = $"INSERT INTO forecast VALUES {values}" + OnDuplicateKey;
+                var command = connection.CreateCommand();
+                command.CommandText = $"INSERT INTO forecast VALUES {values}"
+                    + "ON DUPLICATE KEY UPDATE temperature = VALUES(temperature), "
+                    + "wind_speed = VALUES(wind_speed), wind_degree = VALUES(wind_degree), pressure = VALUES(pressure), "
+                    + "pressure = VALUES(pressure), humidity = VALUES(humidity)";
                 Console.WriteLine(command.CommandText);
                 command.ExecuteNonQuery();
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
                 MessageBox.Show("WriteForecastCollection: " + ex.Message);
             }
