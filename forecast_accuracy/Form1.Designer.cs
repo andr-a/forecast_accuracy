@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.lbxCities = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonHistoricalForecasts = new System.Windows.Forms.Button();
             this.labelId = new System.Windows.Forms.Label();
             this.labelCountry = new System.Windows.Forms.Label();
             this.labelTimezoneShift = new System.Windows.Forms.Label();
@@ -52,15 +52,21 @@
             this.labelTimeValue = new System.Windows.Forms.Label();
             this.labelWindSpeedValue = new System.Windows.Forms.Label();
             this.labelTemperatureValue = new System.Windows.Forms.Label();
-            this.dataGridViewForecasts = new System.Windows.Forms.DataGridView();
-            this.buttonUpdateForecasts = new System.Windows.Forms.Button();
+            this.dataGridViewWeather = new System.Windows.Forms.DataGridView();
+            this.buttonUpdateWeather = new System.Windows.Forms.Button();
             this.textBoxCity = new System.Windows.Forms.TextBox();
             this.labelCity = new System.Windows.Forms.Label();
             this.buttonAddCity = new System.Windows.Forms.Button();
             this.buttonSuspendCity = new System.Windows.Forms.Button();
+            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
+            this.comboBoxTime = new System.Windows.Forms.ComboBox();
+            this.labelSelectWeather = new System.Windows.Forms.Label();
+            this.buttonSelect = new System.Windows.Forms.Button();
+            this.buttonShowStatistics = new System.Windows.Forms.Button();
+            this.buttonClose = new System.Windows.Forms.Button();
             this.tableLayoutPanelCity.SuspendLayout();
             this.tableLayoutPanelCurrent.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewForecasts)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWeather)).BeginInit();
             this.SuspendLayout();
             // 
             // lbxCities
@@ -72,15 +78,15 @@
             this.lbxCities.TabIndex = 0;
             this.lbxCities.SelectedIndexChanged += new System.EventHandler(this.lbxCities_SelectedIndexChanged);
             // 
-            // button1
+            // buttonHistoricalForecasts
             // 
-            this.button1.Location = new System.Drawing.Point(670, 415);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "btnTest";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.buttonHistoricalForecasts.Location = new System.Drawing.Point(765, 402);
+            this.buttonHistoricalForecasts.Name = "buttonHistoricalForecasts";
+            this.buttonHistoricalForecasts.Size = new System.Drawing.Size(132, 23);
+            this.buttonHistoricalForecasts.TabIndex = 1;
+            this.buttonHistoricalForecasts.Text = "Historical Forecasts";
+            this.buttonHistoricalForecasts.UseVisualStyleBackColor = true;
+            this.buttonHistoricalForecasts.Click += new System.EventHandler(this.buttonHistoricalForecasts_Click);
             // 
             // labelId
             // 
@@ -344,30 +350,30 @@
             this.labelTemperatureValue.Text = "...";
             this.labelTemperatureValue.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
-            // dataGridViewForecasts
+            // dataGridViewWeather
             // 
-            this.dataGridViewForecasts.AllowUserToAddRows = false;
-            this.dataGridViewForecasts.AllowUserToDeleteRows = false;
-            this.dataGridViewForecasts.AllowUserToResizeColumns = false;
-            this.dataGridViewForecasts.AllowUserToResizeRows = false;
-            this.dataGridViewForecasts.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridViewForecasts.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewForecasts.Location = new System.Drawing.Point(574, 12);
-            this.dataGridViewForecasts.Name = "dataGridViewForecasts";
-            this.dataGridViewForecasts.ReadOnly = true;
-            this.dataGridViewForecasts.RowHeadersVisible = false;
-            this.dataGridViewForecasts.Size = new System.Drawing.Size(685, 383);
-            this.dataGridViewForecasts.TabIndex = 5;
+            this.dataGridViewWeather.AllowUserToAddRows = false;
+            this.dataGridViewWeather.AllowUserToDeleteRows = false;
+            this.dataGridViewWeather.AllowUserToResizeColumns = false;
+            this.dataGridViewWeather.AllowUserToResizeRows = false;
+            this.dataGridViewWeather.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridViewWeather.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewWeather.Location = new System.Drawing.Point(586, 12);
+            this.dataGridViewWeather.Name = "dataGridViewWeather";
+            this.dataGridViewWeather.ReadOnly = true;
+            this.dataGridViewWeather.RowHeadersVisible = false;
+            this.dataGridViewWeather.Size = new System.Drawing.Size(685, 357);
+            this.dataGridViewWeather.TabIndex = 5;
             // 
-            // buttonUpdateForecasts
+            // buttonUpdateWeather
             // 
-            this.buttonUpdateForecasts.Location = new System.Drawing.Point(982, 415);
-            this.buttonUpdateForecasts.Name = "buttonUpdateForecasts";
-            this.buttonUpdateForecasts.Size = new System.Drawing.Size(106, 23);
-            this.buttonUpdateForecasts.TabIndex = 6;
-            this.buttonUpdateForecasts.Text = "Update Forecasts";
-            this.buttonUpdateForecasts.UseVisualStyleBackColor = true;
-            this.buttonUpdateForecasts.Click += new System.EventHandler(this.buttonUpdateForecasts_Click);
+            this.buttonUpdateWeather.Location = new System.Drawing.Point(330, 346);
+            this.buttonUpdateWeather.Name = "buttonUpdateWeather";
+            this.buttonUpdateWeather.Size = new System.Drawing.Size(106, 23);
+            this.buttonUpdateWeather.TabIndex = 6;
+            this.buttonUpdateWeather.Text = "Update Weather";
+            this.buttonUpdateWeather.UseVisualStyleBackColor = true;
+            this.buttonUpdateWeather.Click += new System.EventHandler(this.buttonUpdateWeather_Click);
             // 
             // textBoxCity
             // 
@@ -406,20 +412,82 @@
             this.buttonSuspendCity.UseVisualStyleBackColor = true;
             this.buttonSuspendCity.Click += new System.EventHandler(this.buttonSuspendCity_Click);
             // 
+            // dateTimePicker1
+            // 
+            this.dateTimePicker1.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dateTimePicker1.Location = new System.Drawing.Point(664, 375);
+            this.dateTimePicker1.Name = "dateTimePicker1";
+            this.dateTimePicker1.Size = new System.Drawing.Size(95, 20);
+            this.dateTimePicker1.TabIndex = 9;
+            // 
+            // comboBoxTime
+            // 
+            this.comboBoxTime.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTime.FormattingEnabled = true;
+            this.comboBoxTime.Location = new System.Drawing.Point(765, 374);
+            this.comboBoxTime.Name = "comboBoxTime";
+            this.comboBoxTime.Size = new System.Drawing.Size(51, 21);
+            this.comboBoxTime.TabIndex = 10;
+            // 
+            // labelSelectWeather
+            // 
+            this.labelSelectWeather.AutoSize = true;
+            this.labelSelectWeather.Location = new System.Drawing.Point(583, 378);
+            this.labelSelectWeather.Name = "labelSelectWeather";
+            this.labelSelectWeather.Size = new System.Drawing.Size(75, 13);
+            this.labelSelectWeather.TabIndex = 11;
+            this.labelSelectWeather.Text = "Past Weather:";
+            // 
+            // buttonSelect
+            // 
+            this.buttonSelect.Location = new System.Drawing.Point(822, 372);
+            this.buttonSelect.Name = "buttonSelect";
+            this.buttonSelect.Size = new System.Drawing.Size(75, 23);
+            this.buttonSelect.TabIndex = 12;
+            this.buttonSelect.Text = "Select";
+            this.buttonSelect.UseVisualStyleBackColor = true;
+            this.buttonSelect.Click += new System.EventHandler(this.buttonSelect_Click);
+            // 
+            // buttonShowStatistics
+            // 
+            this.buttonShowStatistics.Location = new System.Drawing.Point(965, 373);
+            this.buttonShowStatistics.Name = "buttonShowStatistics";
+            this.buttonShowStatistics.Size = new System.Drawing.Size(92, 23);
+            this.buttonShowStatistics.TabIndex = 13;
+            this.buttonShowStatistics.Text = "Show Statistics";
+            this.buttonShowStatistics.UseVisualStyleBackColor = true;
+            this.buttonShowStatistics.Click += new System.EventHandler(this.buttonShowStatistics_Click);
+            // 
+            // buttonClose
+            // 
+            this.buttonClose.Location = new System.Drawing.Point(1161, 415);
+            this.buttonClose.Name = "buttonClose";
+            this.buttonClose.Size = new System.Drawing.Size(110, 23);
+            this.buttonClose.TabIndex = 14;
+            this.buttonClose.Text = "Close";
+            this.buttonClose.UseVisualStyleBackColor = true;
+            this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1283, 450);
+            this.Controls.Add(this.buttonClose);
+            this.Controls.Add(this.buttonShowStatistics);
+            this.Controls.Add(this.buttonSelect);
+            this.Controls.Add(this.labelSelectWeather);
+            this.Controls.Add(this.comboBoxTime);
+            this.Controls.Add(this.dateTimePicker1);
             this.Controls.Add(this.buttonSuspendCity);
             this.Controls.Add(this.buttonAddCity);
             this.Controls.Add(this.textBoxCity);
             this.Controls.Add(this.labelCity);
-            this.Controls.Add(this.buttonUpdateForecasts);
-            this.Controls.Add(this.dataGridViewForecasts);
+            this.Controls.Add(this.buttonUpdateWeather);
+            this.Controls.Add(this.dataGridViewWeather);
             this.Controls.Add(this.tableLayoutPanelCurrent);
             this.Controls.Add(this.tableLayoutPanelCity);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonHistoricalForecasts);
             this.Controls.Add(this.lbxCities);
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -429,14 +497,14 @@
             this.tableLayoutPanelCity.PerformLayout();
             this.tableLayoutPanelCurrent.ResumeLayout(false);
             this.tableLayoutPanelCurrent.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewForecasts)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewWeather)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonHistoricalForecasts;
         private System.Windows.Forms.Label labelTimzoneShiftValue;
         private System.Windows.Forms.Label labelIdValue;
         private System.Windows.Forms.Label labelNameValue;
@@ -459,13 +527,19 @@
         private System.Windows.Forms.Label labelTimeValue;
         private System.Windows.Forms.Label labelWindSpeedValue;
         private System.Windows.Forms.Label labelTemperatureValue;
-        private System.Windows.Forms.DataGridView dataGridViewForecasts;
+        private System.Windows.Forms.DataGridView dataGridViewWeather;
         private System.Windows.Forms.ListBox lbxCities;
-        private System.Windows.Forms.Button buttonUpdateForecasts;
+        private System.Windows.Forms.Button buttonUpdateWeather;
         private System.Windows.Forms.TextBox textBoxCity;
         private System.Windows.Forms.Label labelCity;
         private System.Windows.Forms.Button buttonAddCity;
         private System.Windows.Forms.Button buttonSuspendCity;
+        private System.Windows.Forms.DateTimePicker dateTimePicker1;
+        private System.Windows.Forms.ComboBox comboBoxTime;
+        private System.Windows.Forms.Label labelSelectWeather;
+        private System.Windows.Forms.Button buttonSelect;
+        private System.Windows.Forms.Button buttonShowStatistics;
+        private System.Windows.Forms.Button buttonClose;
     }
 }
 

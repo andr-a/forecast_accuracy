@@ -22,8 +22,6 @@ namespace forecast_accuracy
             var timeSpanHours = (forecastTime - timeOfRequest).TotalHours;
             var rounded = Math.Round(timeSpanHours / 24) * 24;
             var result = forecastTime.AddHours(-rounded);
-            Console.WriteLine(timeOfRequest + " *** " + forecastTime);
-            Console.WriteLine(result);
             return result;
         }
 
