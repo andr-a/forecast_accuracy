@@ -66,7 +66,6 @@ namespace forecast_accuracy
             catch (WebException ex)
             {
                 MessageBox.Show("GetApiWeatherByName:\n\n" + ex.Message);
-                Console.WriteLine("!");
                 return null;
             }
         }

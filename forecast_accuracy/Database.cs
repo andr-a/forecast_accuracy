@@ -99,6 +99,7 @@ namespace forecast_accuracy
                                      + $"'{timeofCalculation:yyyy-MM-dd HH:mm:ss}', "
                                      + $"{cityId}, {temperatur}, {windSpeed}, {windDegree}, {pressure}, {humidity})";
                 command.ExecuteNonQuery();
+                Console.WriteLine("Actual written.");
             }
             catch (MySqlException ex)
             {
@@ -177,29 +178,6 @@ namespace forecast_accuracy
             }
         }
 
-        public void GetForecastDataTable(ref DataTable dataTable, int cityId)
-        {
-            dataTable.Clear();
-            try
-            {
-                OpenDb();
-                var command = connection.CreateCommand();
-                command.CommandText = $"SELECT * FROM forecast WHERE city_id = {cityId} ORDER BY forecast_time";
-                command.ExecuteNonQuery();
-
-                var dataAdapter = new MySqlDataAdapter(command);
-                dataAdapter.Fill(dataTable);
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
-            }
-            finally
-            {
-                CloseDb();
-            }
-        }
-
         public List<DatabaseWeather> GetForecastListById(int cityId)
         {
             var forecastList = new List<DatabaseWeather>();
@@ -208,7 +186,8 @@ namespace forecast_accuracy
             {
                 OpenDb();
                 var command = connection.CreateCommand();
-                command.CommandText = $"SELECT * FROM forecast WHERE city_id = {cityId} ORDER BY forecast_time";
+                //command.CommandText = $"SELECT *,  FROM forecast WHERE city_id = {cityId} ORDER BY forecast_time";
+                command.CommandText = $"SELECT * , TIME_FORMAT(TIMEDIFF(forecast_time, rounded_time_of_request), '%H') / 24 AS t_minus FROM forecast HAVING city_id = {cityId} ORDER BY forecast_time";
                 var reader = command.ExecuteReader();
 
                 while (reader.Read())
@@ -216,6 +195,7 @@ namespace forecast_accuracy
                     var forecast = new DatabaseWeather(
                         reader.GetDateTime(0),
                         reader.GetDateTime(1),
+                        reader.GetInt32(8),
                         reader.GetInt32(2),
                         !reader.IsDBNull(3) ? reader.GetDouble(3) : 0.0,
                         !reader.IsDBNull(4) ? reader.GetDouble(4) : 0.0,
@@ -237,6 +217,70 @@ namespace forecast_accuracy
             return forecastList;
         }
 
+        public List<DatabaseWeather> GetWeatherByIdAndDateTime(int cityId, DateTime dateTime)
+        {
+            var weatherList = new List<DatabaseWeather>();
+            var formattedDateTime = dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+
+            try
+            {
+                OpenDb();
+                var command = connection.CreateCommand();
+                command.CommandText = $"(SELECT * , 0 as t_minus FROM actual WHERE city_id = {cityId} AND rounded_time = '{formattedDateTime}') "
+                    + $"UNION (SELECT * , TIME_FORMAT(TIMEDIFF(forecast_time, rounded_time_of_request), '%H') / 24 AS t_minus FROM forecast HAVING city_id = {cityId} AND forecast_time = '{formattedDateTime}' AND t_minus > 0)";
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var weahter = new DatabaseWeather(
+                        reader.GetDateTime(0),
+                        reader.GetDateTime(1),
+                        reader.GetInt32(8),
+                        reader.GetInt32(2),
+                        !reader.IsDBNull(3) ? reader.GetDouble(3) : 0.0,
+                        !reader.IsDBNull(4) ? reader.GetDouble(4) : 0.0,
+                        !reader.IsDBNull(5) ? reader.GetInt32(5) : 0,
+                        !reader.IsDBNull(6) ? reader.GetInt32(6) : 0,
+                        !reader.IsDBNull(7) ? reader.GetInt32(7) : 0
+                        );
+                    weatherList.Add(weahter);
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
+            }
+            finally
+            {
+                CloseDb();
+            }
+            return weatherList;
+        }
+
+        // Nicht in Verwendung, deshalb private.
+        private void GetForecastDataTable(ref DataTable dataTable, int cityId)
+        {
+            dataTable.Clear();
+            try
+            {
+                OpenDb();
+                var command = connection.CreateCommand();
+                command.CommandText = $"SELECT * FROM forecast WHERE city_id = {cityId} ORDER BY forecast_time";
+                command.ExecuteNonQuery();
+
+                var dataAdapter = new MySqlDataAdapter(command);
+                dataAdapter.Fill(dataTable);
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show(System.Reflection.MethodBase.GetCurrentMethod().Name + ":\n\n" + ex.Message);
+            }
+            finally
+            {
+                CloseDb();
+            }
+        }
+        
         // Nicht in Verwendung, deshalb private.
         public List<DatabaseCity> GetCityList()
         {
@@ -270,8 +314,6 @@ namespace forecast_accuracy
             }
             return cityList;
         }
-
-       
 
         // Nicht in Verwendung, deshalb private.
         private void WriteForcastCollection(ForecastCollection forecastCollection)
@@ -309,7 +351,6 @@ namespace forecast_accuracy
                     + "ON DUPLICATE KEY UPDATE temperature = VALUES(temperature), "
                     + "wind_speed = VALUES(wind_speed), wind_degree = VALUES(wind_degree), pressure = VALUES(pressure), "
                     + "pressure = VALUES(pressure), humidity = VALUES(humidity)";
-                Console.WriteLine(command.CommandText);
                 command.ExecuteNonQuery();
             }
             catch (MySqlException ex)

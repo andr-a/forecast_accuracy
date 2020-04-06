@@ -12,6 +12,7 @@ namespace forecast_accuracy
         public DateTime TimeOfWeather { get; set; }
         // Actual/Current -> Zeitpunkt der Berechnung, Forecast -> Zeitpunkt der Abfrage gerundet auf jeden Tag.
         public DateTime TimeOfCalculation { get; set; }
+        public int TMinus { get; set; }
         public int CityId { get; set; }
         public double Temperature { get; set; }
         public double WindSpeed { get; set; }
@@ -30,6 +31,12 @@ namespace forecast_accuracy
             this.WindDegree = windDegree;
             this.Pressure = pressure;
             this.Humidity = humidty;
+        }
+
+        public DatabaseWeather(DateTime timeOfWeather, DateTime timeOfCalculation, int tMinus, int cityId, double temperature, double windSpeed, int windDegree, int pressure, int humidty) : this(
+            timeOfWeather, timeOfCalculation, cityId, temperature, windSpeed, windDegree, pressure, humidty)
+        {
+            this.TMinus = tMinus;
         }
 
         // API Current Weather.

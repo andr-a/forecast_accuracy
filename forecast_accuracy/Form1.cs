@@ -19,6 +19,7 @@ namespace forecast_accuracy
         DataTable cityDataTable = new DataTable();
         DataTable forecastDataTable = new DataTable();
         int selectedCityId;
+        List<DatabaseWeather> weatherList;
 
         public Form1()
         {
@@ -28,6 +29,7 @@ namespace forecast_accuracy
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            SetUpTimeSelection();
             PopulateCityListbox();
         }
 
@@ -38,17 +40,17 @@ namespace forecast_accuracy
             lbxCities.DisplayMember = "name";
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonHistoricalForecasts_Click(object sender, EventArgs e)
         {
-            //db.GetCityDataTable(ref cityDataTable
-
             var forecastList = db.GetForecastListById(selectedCityId);
             forecastDataTable = Helper.ConvertToDataTable(forecastList);
-            PopulateDataGridViewForeCasts();
+            PopulateDataGridViewWeather();
         }
 
         private void lbxCities_SelectedIndexChanged(object sender, EventArgs e)
         {
+            buttonShowStatistics.Enabled = false;
+
             if (lbxCities.SelectedIndex > -1)
             {
                 var index = lbxCities.SelectedIndex;
@@ -67,7 +69,7 @@ namespace forecast_accuracy
 
                 if (weather != null)
                 {
-                    labelTimeValue.Text = weather.TimeOfWeather.ToString("yyyy-MM-dd HH:mm:ss");
+                    labelTimeValue.Text = weather.TimeOfCalculation.ToString("yyyy-MM-dd HH:mm:ss");
                     labelTemperatureValue.Text = weather.Temperature.ToString();
                     labelWindSpeedValue.Text = weather.WindSpeed.ToString();
                     labelWindDegreeValue.Text = weather.WindDegree.ToString();
@@ -75,25 +77,24 @@ namespace forecast_accuracy
                     labelHumidityValue.Text = weather.Humidity.ToString();
                     db.WriteActual(weather);
 
-                    //db.GetForecastDataTable(ref forecastDataTable, weather.CityId);
-
                     var forecastList = api.GetForecastListByName(city["name"].ToString());
                     forecastDataTable = Helper.ConvertToDataTable(forecastList);
-                    PopulateDataGridViewForeCasts();
+                    PopulateDataGridViewWeather();
+                    dataGridViewWeather.Columns.Remove("TMinus");
                 }
             }
         }
 
-        public void PopulateDataGridViewForeCasts()
+        public void PopulateDataGridViewWeather()
         {
-            dataGridViewForecasts.DataSource = null;
+            dataGridViewWeather.DataSource = null;
 
-            dataGridViewForecasts.DataSource = forecastDataTable;
-            dataGridViewForecasts.DataMember = forecastDataTable.TableName;
-            dataGridViewForecasts.Columns.Remove("TimeOfCalculation");
-            dataGridViewForecasts.Columns.Remove("CityId");
-            dataGridViewForecasts.AutoResizeColumns();
-            foreach (DataGridViewColumn column in dataGridViewForecasts.Columns)
+            dataGridViewWeather.DataSource = forecastDataTable;
+            //dataGridViewWeather.DataMember = forecastDataTable.TableName;
+            dataGridViewWeather.Columns.Remove("TimeOfCalculation");
+            dataGridViewWeather.Columns.Remove("CityId");
+            dataGridViewWeather.AutoResizeColumns();
+            foreach (DataGridViewColumn column in dataGridViewWeather.Columns)
             {
                 column.SortMode = DataGridViewColumnSortMode.NotSortable;
                 if (column.ValueType == typeof(DateTime))
@@ -103,16 +104,23 @@ namespace forecast_accuracy
             }
         }
 
-        private void buttonUpdateForecasts_Click(object sender, EventArgs e)
+        private void buttonUpdateWeather_Click(object sender, EventArgs e)
         {
             var forecastList = new List<DatabaseWeather>();
             foreach (DataRow row in cityDataTable.Rows)
             {
                 var city = row["name"].ToString();
+
+                (var current, _) = api.GetCurrentByName(city);
+                if (current != null)
+                {
+                    db.WriteActual(current);
+                }
+
                 var forecast = api.GetForecastListByName(city);
                 if (forecast != null)
                 {
-                forecastList.AddRange(forecast);
+                    forecastList.AddRange(forecast);
                 }
             }
             if (forecastList.Count > 0)
@@ -137,6 +145,56 @@ namespace forecast_accuracy
             string cityName = lbxCities.GetItemText(lbxCities.SelectedItem);
             db.SuspendCity(cityName);
             db.GetCityDataTable(ref cityDataTable);
+        }
+
+        void SetUpTimeSelection()
+        {
+            dateTimePicker1.CustomFormat = "yyyy-MM-dd";
+
+            for (int i = 0; i < 24; i += 3)
+            {
+                comboBoxTime.Items.Add($"{i:00}:00");
+            }
+            comboBoxTime.SelectedIndex = 0;
+        }
+
+        private void buttonSelect_Click(object sender, EventArgs e)
+        {
+            var date = dateTimePicker1.Value.Date;
+            var time = Convert.ToInt32(comboBoxTime.SelectedItem.ToString().Remove(2));
+            var dateTime = date.AddHours(time);
+
+            weatherList = db.GetWeatherByIdAndDateTime(selectedCityId, dateTime);
+
+            dataGridViewWeather.DataSource = null;
+            dataGridViewWeather.DataSource = weatherList;
+            dataGridViewWeather.Columns.Remove("TimeOfCalculation");
+            dataGridViewWeather.Columns.Remove("TimeOfWeather");
+            dataGridViewWeather.Columns.Remove("CityId");
+
+            if (dataGridViewWeather.Rows[0].Cells[0].Value.ToString().Equals("0") && dataGridViewWeather.RowCount > 1)
+            {
+                buttonShowStatistics.Enabled = true;
+            }
+            else
+            {
+                buttonShowStatistics.Enabled = false;
+            }
+        }
+
+        private void buttonShowStatistics_Click(object sender, EventArgs e)
+        {
+            var cityName = cityDataTable.Rows[lbxCities.SelectedIndex];
+            var statisticsForm = new StatisticsForm(cityName["name"].ToString(), weatherList);
+            statisticsForm.Show();
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Do you really want to close the Application?", "Close", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                Close();
+            }
         }
     }
 }
