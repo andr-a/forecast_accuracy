@@ -26,7 +26,7 @@ namespace forecast_accuracy
         private double CalculateAccuracy(double actual, double forecast)
         {
             var result = 1 - (forecast / actual);
-            return result;
+            return Math.Round(Math.Abs(result), 2);
         }
     }
 }

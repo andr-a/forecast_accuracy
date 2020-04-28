@@ -489,6 +489,7 @@
             this.Controls.Add(this.tableLayoutPanelCity);
             this.Controls.Add(this.buttonHistoricalForecasts);
             this.Controls.Add(this.lbxCities);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Weather";
