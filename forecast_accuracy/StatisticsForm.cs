@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace forecast_accuracy
 {
@@ -30,6 +31,10 @@ namespace forecast_accuracy
             CalculateStatistics();
             SetupDataGridViewColumnNames();
             PopulateDataGridView();
+
+            //Console.WriteLine(dataGridViewStatistics[2, 1].Value.GetType());
+            //Console.WriteLine(dataGridViewStatistics[2, 1].Value);
+            DrawChart();
         }
 
         private void CalculateStatistics()
@@ -44,9 +49,9 @@ namespace forecast_accuracy
         private void SetupDataGridViewColumnNames()
         {
             int columnCount = 11;
-            var columnNames = new List<string>() { "TMinus", "Temperature", "Temperuture Accuracy", "Wind Speed",
-                "Wind Speed Accuracy", "Wind Degree", "Wind Degree Accuracy", "Pressure", "Pressure Accuracy",
-                "Humidity", "Humidity Accuracy"
+            var columnNames = new List<string>() { "TMinus", "Temperature", "Temperuture Deviation", "Wind Speed",
+                "Wind Speed Deviation", "Wind Degree", "Wind Degree Deviation", "Pressure", "Pressure Deviation",
+                "Humidity", "Humidity Deviation"
             };
 
             dataGridViewStatistics.ColumnCount = columnCount;
@@ -59,8 +64,6 @@ namespace forecast_accuracy
 
         private void PopulateDataGridView()
         {
-            Console.WriteLine(statisticsList.Count);
-
             var actual = weatherList[0];
 
             dataGridViewStatistics.Rows.Add(0, actual.Temperature, null, actual.WindSpeed, null, actual.WindDegree, null,
@@ -84,6 +87,50 @@ namespace forecast_accuracy
                     windDegree, windDegreeAccuracy, pressure, pressureAccuracy, humidity, humidityAccuracy);
                 
             }
+        }
+
+        private void DrawChart()
+        {
+            chart1.ChartAreas[0].AxisX.IsMarginVisible = false;
+            chart1.ChartAreas[0].AxisX.Title = "Days until forecasted date";
+            chart1.ChartAreas[0].AxisY.Title = "%";
+            chart1.Series.Clear();
+
+            for (int j = 2; j < dataGridViewStatistics.Columns.Count; j += 2)
+            {
+                // j - 1 um eine kompaktere Legende zu erstellen.
+                chart1.Series.Add(dataGridViewStatistics.Columns[j - 1].HeaderText).ChartType = SeriesChartType.Line;
+
+                for (int i = dataGridViewStatistics.Rows.Count - 1; i > 0; i--)
+                {
+                    chart1.Series[chart1.Series.Count - 1].Points.AddXY(dataGridViewStatistics[0, i].Value.ToString(), Double.Parse(dataGridViewStatistics[j, i].Value.ToString().Replace("%", "")));
+                }
+            }
+        }
+
+        // Nicht verwendet.
+        private void DrawColumnChart()
+        {
+            chart1.Series.Clear();
+
+            for (int i = 0; i < dataGridViewStatistics.Rows.Count; i++)
+            {
+                chart1.Series.Add(dataGridViewStatistics[0, i].Value.ToString());
+                chart1.Series[i].ChartType = SeriesChartType.Column;
+            }
+
+            for (int i = 1; i < dataGridViewStatistics.Rows.Count; i++)
+            {
+                for (int j = 2; j < dataGridViewStatistics.Columns.Count; j += 2)
+                {
+                    chart1.Series[i].Points.AddXY(dataGridViewStatistics.Columns[j].HeaderText, dataGridViewStatistics[j, i].Value);
+                } 
+            }
+        }
+
+        private void buttonClose_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }

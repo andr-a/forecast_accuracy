@@ -12,7 +12,7 @@ namespace forecast_accuracy
 {
     public class OpenWeatherMapApi
     {
-        private const string ApiKey = "***REMOVED***";
+        private const string ApiKey = "487cdd963fc6fe3e039d81147780ef10";
 
         public (DatabaseWeather weather, DatabaseCity city) GetCurrentByName(string city)
         {

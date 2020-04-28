@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+﻿    using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -46,8 +46,10 @@ namespace forecast_accuracy
                 OpenDb();
                 var command = connection.CreateCommand();
                 // Bei Zeitumstellung ändert sich timezoneShift entsprechend.
-                command.CommandText = $"INSERT INTO city VALUES({id}, '{name}', '{countryIso}', {timezoneShift}, 0) "
-                                    + $"ON DUPLICATE KEY UPDATE timezone_shift = {timezoneShift}, suspended = 0";
+                command.CommandText = $"INSERT INTO city VALUES({id}, '{name}', "
+                    + $"'{countryIso}', {timezoneShift}, 0) "
+                    + $"ON DUPLICATE KEY UPDATE timezone_shift = {timezoneShift}, "
+                    + $"suspended = 0";
                 command.ExecuteNonQuery();
             }
             catch (MySqlException ex)
@@ -227,7 +229,7 @@ namespace forecast_accuracy
                 OpenDb();
                 var command = connection.CreateCommand();
                 command.CommandText = $"(SELECT * , 0 as t_minus FROM actual WHERE city_id = {cityId} AND rounded_time = '{formattedDateTime}') "
-                    + $"UNION (SELECT * , TIME_FORMAT(TIMEDIFF(forecast_time, rounded_time_of_request), '%H') / 24 AS t_minus FROM forecast HAVING city_id = {cityId} AND forecast_time = '{formattedDateTime}' AND t_minus > 0)";
+                    + $"UNION (SELECT * , TIME_FORMAT(TIMEDIFF(forecast_time, rounded_time_of_request), '%H') / 24 AS t_minus FROM forecast HAVING city_id = {cityId} AND forecast_time = '{formattedDateTime}' AND t_minus > 0) ORDER BY t_minus";
                 var reader = command.ExecuteReader();
 
                 while (reader.Read())

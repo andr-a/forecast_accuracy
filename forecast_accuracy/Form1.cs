@@ -45,6 +45,7 @@ namespace forecast_accuracy
             var forecastList = db.GetForecastListById(selectedCityId);
             forecastDataTable = Helper.ConvertToDataTable(forecastList);
             PopulateDataGridViewWeather();
+            buttonShowStatistics.Enabled = false;
         }
 
         private void lbxCities_SelectedIndexChanged(object sender, EventArgs e)
@@ -172,7 +173,7 @@ namespace forecast_accuracy
             dataGridViewWeather.Columns.Remove("TimeOfWeather");
             dataGridViewWeather.Columns.Remove("CityId");
 
-            if (dataGridViewWeather.Rows[0].Cells[0].Value.ToString().Equals("0") && dataGridViewWeather.RowCount > 1)
+            if (dataGridViewWeather.RowCount > 1 && dataGridViewWeather.Rows[0].Cells[0].Value.ToString().Equals("0"))
             {
                 buttonShowStatistics.Enabled = true;
             }
