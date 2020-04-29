@@ -1,8 +1,8 @@
-#Forecast Accuracy
-##Genauigkeit von Wettervorhersagen
+# Forecast Accuracy
+## Genauigkeit von Wettervorhersagen
 
 Unter Verwendung einer API einer Wetterseite werden Wetterdaten gesammelt.
-Hauptaugenmerk liegt darauf, die Genauigkeit der der Tagesvorhersagen zu überprüfen,
+Hauptaugenmerk liegt darauf, die Genauigkeit der der Tagesvorhersagen zu Ã¼berprÃ¼fen,
 z.B. ob die Genauigkeit steigt, je kurzfristiger die Vorhersagen sind. Die Ergebnisse
 sollen visualisiert werden.
 
