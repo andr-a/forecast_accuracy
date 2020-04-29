@@ -338,3 +338,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/passwords.txt
+/forecast_accuracy-backup.git
+/forecast_accuracy.git.bfg-report/2020-04-29/13-37-23
+/forecast_accuracy.git
